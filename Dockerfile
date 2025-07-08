@@ -4,5 +4,5 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY app.py .
+COPY check_cpu.py.py .
 CMD ["python", "check_cpu.py"]
