@@ -1,6 +1,8 @@
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+from prometheus_client import start_http_server, Gauge
 import os
+import time
 
 def parse_cpu(cpu_str):
     if cpu_str.endswith('n'):  # 纳核
@@ -12,14 +14,7 @@ def parse_cpu(cpu_str):
     else:
         return float(cpu_str)
 
-def main():
-    # 加载集群内配置
-    config.load_incluster_config()
-
-    node_name = os.getenv('NODE_NAME')
-    if not node_name:
-        raise Exception("环境变量 NODE_NAME 未设置")
-
+def get_cpu_remaining(node_name):
     core_v1 = client.CoreV1Api()
     custom_api = client.CustomObjectsApi()
 
@@ -28,7 +23,7 @@ def main():
     cpu_capacity_str = node.status.capacity['cpu']
     cpu_capacity = parse_cpu(cpu_capacity_str)
 
-    # 获取节点使用情况（需要 metrics-server）
+    # 获取节点使用情况（metrics-server）
     try:
         metrics = custom_api.get_cluster_custom_object(
             group="metrics.k8s.io",
@@ -43,10 +38,27 @@ def main():
         cpu_usage = 0.0
 
     cpu_remaining = cpu_capacity - cpu_usage
+    return cpu_remaining
 
-    print(f"node name {node_name} CPU capacity: {cpu_capacity} cores")
-    print(f"node name {node_name} CPU used: {cpu_usage} cores")
-    print(f"node name {node_name} CPU avaliable: {cpu_remaining} cores")
+def main():
+    # 加载集群内配置
+    config.load_incluster_config()
+
+    node_name = os.getenv('NODE_NAME')
+    if not node_name:
+        raise Exception("环境变量 NODE_NAME 未设置")
+
+    # 定义一个 Gauge 指标
+    cpu_remaining_gauge = Gauge('node_cpu_remaining_cores', 'Node CPU remaining cores')
+
+    # 启动 HTTP 服务，暴露指标端口
+    start_http_server(8000)
+
+    while True:
+        remaining = get_cpu_remaining(node_name)
+        cpu_remaining_gauge.set(remaining)
+        print(f"CPU剩余核数: {remaining}")
+        time.sleep(30)
 
 if __name__ == "__main__":
     main()

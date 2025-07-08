@@ -1,7 +1,8 @@
 FROM python:3.10-slim
 
-RUN pip install kubernetes
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-COPY check_cpu.py /check_cpu.py
-
-ENTRYPOINT ["python", "/check_cpu.py"]
+COPY app.py .
+CMD ["python", "app.py"]
