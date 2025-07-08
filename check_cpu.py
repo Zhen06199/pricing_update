@@ -44,9 +44,9 @@ def main():
 
     cpu_remaining = cpu_capacity - cpu_usage
 
-    print(f"节点 {node_name} CPU 容量: {cpu_capacity} cores")
-    print(f"节点 {node_name} CPU 使用: {cpu_usage} cores")
-    print(f"节点 {node_name} CPU 剩余: {cpu_remaining} cores")
+    print(f"node name {node_name} CPU capacity: {cpu_capacity} cores")
+    print(f"node name {node_name} CPU used: {cpu_usage} cores")
+    print(f"node name {node_name} CPU avaliable: {cpu_remaining} cores")
 
 if __name__ == "__main__":
     main()
