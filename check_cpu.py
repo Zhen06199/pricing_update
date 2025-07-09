@@ -41,7 +41,7 @@ def get_cpu_remaining(node_name):
     return cpu_remaining
 
 def main():
-    # 加载集群内配置aa
+    # 加载集群内配置
     config.load_incluster_config()
 
     node_name = os.getenv('NODE_NAME')
